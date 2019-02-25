@@ -17,6 +17,8 @@ strip = adafruit_dotstar.DotStar(board.SCK,
                                  1,
                                  brightness=0.2)
 
+i2c = busio.I2C(board.SCL, board.SDA)
+
 # # Built in red LED
 led = digitalio.DigitalInOut(board.D13)
 led.direction = digitalio.Direction.OUTPUT
@@ -24,8 +26,16 @@ led.direction = digitalio.Direction.OUTPUT
 
 dot[0] = (255,0,111)
 
+
+
+while not i2c.try_lock():
+    pass
+
 i = 0
 while True:
+
+    print("I2C addresses found:", [hex(device_address)
+                                   for device_address in i2c.scan()])
 
     strip[0] = (i,0,0)
 
