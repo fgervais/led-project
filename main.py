@@ -113,13 +113,11 @@ value_encoder = I2CEncoderV2(i2c_devices[1],
 
 
 dot[0] = (255,0,111)
-color1 = fancy.CHSV(0.08, 1.0, 1.0)
-print(color1.pack())
 
 
 for i in [hue_encoder, value_encoder]:
     i.counter_max_value = 255
-    i.color = color1
+    i.color = fancy.CHSV(0)
 
 # # Built in red LED
 led = digitalio.DigitalInOut(board.D13)
@@ -127,20 +125,13 @@ led.direction = digitalio.Direction.OUTPUT
 
 
 
-
-
-# while not i2c.try_lock():
-#     pass
-
-# i = 0
 while True:
-
-    # print("I2C addresses found:", [hex(device_address)
-    #                                for device_address in i2c.scan()])
-
     print("Hello")
     for i in [hue_encoder, value_encoder]:
         print(i)
+
+
+    hue_encoder.color = fancy.CHSV(hue_encoder.counter_value)
 
 
     # strip[0] = (i,0,0)
