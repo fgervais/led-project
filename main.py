@@ -83,44 +83,53 @@ strip = adafruit_dotstar.DotStar(board.SCK,
                                  1,
                                  brightness=0.2)
 
-i2c = busio.I2C(board.SCL, board.SDA)
-device1 = I2CDevice(i2c, 0x01)
-# device2 = I2CDevice(i2c, 0x02)
-encoder = I2CEncoderV2(device1, illuminated=True)
-# encoder2 = I2CEncoderV2(device2)
+i2c_bus = busio.I2C(board.SCL, board.SDA)
 
-encoder.counter_max_value = 255
-# print(encoder.counter_max_value)
+i2c_devices = []
+i2c_devices.append(I2CDevice(i2c_bus, 0x01))
+i2c_devices.append(I2CDevice(i2c_bus, 0x02))
+
+hue_encoder = I2CEncoderV2(i2c_devices[0], illuminated=True)
+value_encoder = I2CEncoderV2(i2c_devices[1], illuminated=True)
+
+
+dot[0] = (255,0,111)
+color1 = fancy.CHSV(0.08, 1.0, 1.0)
+print(color1.pack())
+
+
+for i in [hue_encoder, value_encoder]:
+    i.counter_max_value = 255
+    i.color = color1
 
 # # Built in red LED
 led = digitalio.DigitalInOut(board.D13)
 led.direction = digitalio.Direction.OUTPUT
 
 
-dot[0] = (255,0,111)
-color1 = fancy.CHSV(0.08, 1.0, 1.0)
-print(color1.pack())
-encoder.color = color1
+
+
 
 # while not i2c.try_lock():
 #     pass
 
-i = 0
+# i = 0
 while True:
 
     # print("I2C addresses found:", [hex(device_address)
     #                                for device_address in i2c.scan()])
 
     print("Hello")
-    print("ENCODER CONFIG: " + hex(encoder.config))
-    print("ENCODER STATUS: " + hex(encoder.status))
-    print("COUNTER VALUE: " + hex(encoder.counter_value))
-    print("COUNTER MAX VALUE: " + hex(encoder.counter_max_value))
+    for i in [hue_encoder, value_encoder]:
+        print("ENCODER CONFIG: " + hex(i.config))
+        print("ENCODER STATUS: " + hex(i.status))
+        print("COUNTER VALUE: " + hex(i.counter_value))
+        print("COUNTER MAX VALUE: " + hex(i.counter_max_value))
+        print("COUNTER COLOR: " + str(i.color))
     # print("test: " + str(encoder2.counter_value))
 
-    print(encoder.color)
 
-    strip[0] = (i,0,0)
+    # strip[0] = (i,0,0)
 
-    i = (i+1) % 256  # run from 0 to 255
+    # i = (i+1) % 256  # run from 0 to 255
     time.sleep(1) # make bigger to slow down
