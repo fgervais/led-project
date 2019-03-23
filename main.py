@@ -10,13 +10,25 @@ from adafruit_bus_device.i2c_device import I2CDevice
 
 # https://www.tindie.com/products/Saimon/i2cencoder-v2-connect-multiple-encoder-on-i2c-bus/?pt=ac_prod_search
 class I2CEncoderV2():
-    def __init__(self, device, illuminated=False):
+    def __init__(self, device, name="", illuminated=False):
         self.device = device
+        self.name = name
 
         if illuminated:
             self.config = (0x01 << 5)
         else:
             self.config = 0x00
+
+    def __str__(self):
+        s  = "ENC[{}]: config: \t\t{}\n".format(self.name, hex(self.config))
+        s += "ENC[{}]: status: \t\t{}\n".format(self.name, hex(self.status))
+        s += "ENC[{}]: counter_value: \t{}\n".format(self.name,
+                                                  hex(self.counter_value))
+        s += "ENC[{}]: counter_max_value: \t{}\n".format(self.name,
+                                                  hex(self.counter_max_value))
+        s += "ENC[{}]: color: \t\t{}\n".format(self.name, self.color)
+
+        return s
 
     def read(self, register, length):
         result = bytearray(length)
@@ -89,8 +101,8 @@ i2c_devices = []
 i2c_devices.append(I2CDevice(i2c_bus, 0x01))
 i2c_devices.append(I2CDevice(i2c_bus, 0x02))
 
-hue_encoder = I2CEncoderV2(i2c_devices[0], illuminated=True)
-value_encoder = I2CEncoderV2(i2c_devices[1], illuminated=True)
+hue_encoder = I2CEncoderV2(i2c_devices[0], "hue", illuminated=True)
+value_encoder = I2CEncoderV2(i2c_devices[1], "value", illuminated=True)
 
 
 dot[0] = (255,0,111)
@@ -121,12 +133,7 @@ while True:
 
     print("Hello")
     for i in [hue_encoder, value_encoder]:
-        print("ENCODER CONFIG: " + hex(i.config))
-        print("ENCODER STATUS: " + hex(i.status))
-        print("COUNTER VALUE: " + hex(i.counter_value))
-        print("COUNTER MAX VALUE: " + hex(i.counter_max_value))
-        print("COUNTER COLOR: " + str(i.color))
-    # print("test: " + str(encoder2.counter_value))
+        print(i)
 
 
     # strip[0] = (i,0,0)
