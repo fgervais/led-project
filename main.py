@@ -10,14 +10,15 @@ from adafruit_bus_device.i2c_device import I2CDevice
 
 # https://www.tindie.com/products/Saimon/i2cencoder-v2-connect-multiple-encoder-on-i2c-bus/?pt=ac_prod_search
 class I2CEncoderV2():
-    def __init__(self, device, name="", illuminated=False):
+    def __init__(self, device, name="", wrap=False, illuminated=False):
         self.device = device
         self.name = name
 
+        config = 0x00
         if illuminated:
-            self.config = (0x01 << 5)
-        else:
-            self.config = 0x00
+            self.config |= (0x01 << 5)
+        if wrap:
+            self.config |= (0x01 << 1)
 
     def __str__(self):
         s  = "ENC[{}]: config: \t\t{}\n".format(self.name, hex(self.config))
@@ -101,8 +102,14 @@ i2c_devices = []
 i2c_devices.append(I2CDevice(i2c_bus, 0x01))
 i2c_devices.append(I2CDevice(i2c_bus, 0x02))
 
-hue_encoder = I2CEncoderV2(i2c_devices[0], "hue", illuminated=True)
-value_encoder = I2CEncoderV2(i2c_devices[1], "value", illuminated=True)
+hue_encoder = I2CEncoderV2(i2c_devices[0],
+                           "hue",
+                           wrap=True,
+                           illuminated=True)
+value_encoder = I2CEncoderV2(i2c_devices[1],
+                             "value",
+                             wrap=True,
+                             illuminated=True)
 
 
 dot[0] = (255,0,111)
