@@ -7,6 +7,7 @@ import time
 import adafruit_fancyled as fancy
 
 from adafruit_bus_device.i2c_device import I2CDevice
+from adafruit_fancyled import CRGB, CHSV
 
 # https://www.tindie.com/products/Saimon/i2cencoder-v2-connect-multiple-encoder-on-i2c-bus/?pt=ac_prod_search
 class I2CEncoderV2():
@@ -21,7 +22,7 @@ class I2CEncoderV2():
             config |= (0x01 << 1)
         self.config = config
 
-        self.last_set_color = fancy.CRGB(0, 0, 0)
+        self.last_set_color = CRGB(0, 0, 0)
         self.fast_mode = False
 
     def __str__(self):
@@ -94,14 +95,15 @@ class I2CEncoderV2():
         g = self.read(0x19, 1)
         b = self.read(0x1a, 1)
 
-        return fancy.CRGB(r, g, b)
+        return CRGB(r, g, b)
 
     @color.setter
     def color(self, color):
-        if type(color) is fancy.CHSV:
-            color = fancy.CRGB(color)
+        if type(color) is CHSV:
+            color = CRGB(color)
 
         if repr(color) != repr(self.last_set_color):
+            print(color)
             self.write(0x18, color.pack().to_bytes(3, 'big'))
             self.last_set_color = color
 
@@ -138,7 +140,7 @@ dot[0] = (255,0,111)
 
 for i in [hue_encoder, value_encoder]:
     i.max_value = 255
-    i.color = fancy.CHSV(0)
+    i.color = CHSV(0)
     i.toggle_fast_mode()
 
 # # Built in red LED
@@ -149,13 +151,13 @@ for i in [hue_encoder, value_encoder]:
     print(i)
 
 while True:
-    hue_encoder.color = fancy.CHSV(hue_encoder.value)
+    hue_encoder.color = fancy.gamma_adjust(CHSV(hue_encoder.value))
     if hue_encoder.status & (0x01 << 1):
         print("toggle fast mode")
         hue_encoder.toggle_fast_mode()
 
     value = value_encoder.value
-    value_encoder.color = fancy.CRGB(value, value, value)
+    value_encoder.color = CRGB(value, value, value)
 
     # strip[0] = (i,0,0)
 
