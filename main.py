@@ -16,21 +16,22 @@ class I2CEncoderV2():
 
         config = 0x00
         if illuminated:
-            self.config |= (0x01 << 5)
+            config |= (0x01 << 5)
         if wrap:
-            self.config |= (0x01 << 1)
+            config |= (0x01 << 1)
+        self.config = config
 
         self.last_set_color = fancy.CRGB(0, 0, 0)
         self.fast_mode = False
 
     def __str__(self):
-        s  = "ENC[{}]: config: \t\t{}\n".format(self.name, hex(self.config))
-        # s += "ENC[{}]: status: \t\t{}\n".format(self.name, hex(self.status))
+        s  = "ENC[{}]: config: \t{}\n".format(self.name, hex(self.config))
+        s += "ENC[{}]: status: \t{}\n".format(self.name, hex(self.status))
         s += "ENC[{}]: value: \t{}\n".format(self.name,
                                                   hex(self.value))
         s += "ENC[{}]: max_value: \t{}\n".format(self.name,
                                                   hex(self.max_value))
-        s += "ENC[{}]: color: \t\t{}\n".format(self.name, self.color)
+        s += "ENC[{}]: color: \t{}\n".format(self.name, self.color)
 
         return s
 
@@ -128,7 +129,7 @@ hue_encoder = I2CEncoderV2(i2c_devices[0],
                            illuminated=True)
 value_encoder = I2CEncoderV2(i2c_devices[1],
                              "value",
-                             wrap=True,
+                             wrap=False,
                              illuminated=True)
 
 
@@ -138,23 +139,23 @@ dot[0] = (255,0,111)
 for i in [hue_encoder, value_encoder]:
     i.max_value = 255
     i.color = fancy.CHSV(0)
+    i.toggle_fast_mode()
 
 # # Built in red LED
 led = digitalio.DigitalInOut(board.D13)
 led.direction = digitalio.Direction.OUTPUT
 
-
+for i in [hue_encoder, value_encoder]:
+    print(i)
 
 while True:
-    # print("Hello")
-    # for i in [hue_encoder, value_encoder]:
-    #     print(i)
-
-
     hue_encoder.color = fancy.CHSV(hue_encoder.value)
     if hue_encoder.status & (0x01 << 1):
         print("toggle fast mode")
         hue_encoder.toggle_fast_mode()
+
+    value = value_encoder.value
+    value_encoder.color = fancy.CRGB(value, value, value)
 
     # strip[0] = (i,0,0)
 
