@@ -9,6 +9,10 @@ import adafruit_fancyled as fancy
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_fancyled import CRGB, CHSV
 
+
+DOTSTAR_MAX_BRIGHTNESS = 0.2
+
+
 # https://www.tindie.com/products/Saimon/i2cencoder-v2-connect-multiple-encoder-on-i2c-bus/?pt=ac_prod_search
 class I2CEncoderV2():
     def __init__(self, device, name="", wrap=False, illuminated=False):
@@ -108,16 +112,57 @@ class I2CEncoderV2():
             self.last_set_color = color
 
 
+class LedStrip():
+    def __init__(self, dotstar):
+        self.dotstar = dotstar
+
+        self.last_set_color = CRGB(0, 0, 0)
+        self.last_set_brightness = 1.0
+
+    def toggle_brightness(self):
+        if self.dotstar.brightness == 0:
+            self.dotstar.brightness = (DOTSTAR_MAX_BRIGHTNESS *
+                                       self.last_set_brightness)
+        else:
+            self.dotstar.brightness = 0
+
+    @property
+    def color(self):
+        return self.last_set_color
+
+    @color.setter
+    def color(self, color):
+        if type(color) is CHSV:
+            color = CRGB(color)
+
+        if repr(color) != repr(self.last_set_color):
+            print("setting strip color")
+            self.dotstar[0] = color.pack()
+            self.last_set_color = color
+
+    @property
+    def brightness(self):
+        return self.last_set_brightness
+
+    @brightness.setter
+    def brightness(self, value):
+        if value != self.last_set_brightness:
+            print("setting strip brightness")
+            self.dotstar.brightness = (DOTSTAR_MAX_BRIGHTNESS *
+                                       self.last_set_brightness)
+            self.last_set_brightness = value
+
+
 # One pixel connected internally!
 dot = adafruit_dotstar.DotStar(board.APA102_SCK,
                                board.APA102_MOSI,
                                1,
-                               brightness=0.2)
+                               brightness=DOTSTAR_MAX_BRIGHTNESS)
 
-strip = adafruit_dotstar.DotStar(board.SCK,
-                                 board.MOSI,
-                                 1,
-                                 brightness=0.2)
+# strip = adafruit_dotstar.DotStar(board.SCK,
+#                                  board.MOSI,
+#                                  1,
+#                                  brightness=DOTSTAR_MAX_BRIGHTNESS)
 
 i2c_bus = busio.I2C(board.SCL, board.SDA)
 
@@ -136,6 +181,7 @@ value_encoder = I2CEncoderV2(i2c_devices[1],
 
 
 dot[0] = (255,0,111)
+strip = LedStrip(dot)
 
 
 for i in [hue_encoder, value_encoder]:
@@ -151,15 +197,21 @@ for i in [hue_encoder, value_encoder]:
     print(i)
 
 while True:
-    hue_encoder.color = fancy.gamma_adjust(CHSV(hue_encoder.value))
+    desired_color = fancy.gamma_adjust(CHSV(hue_encoder.value))
+
+    hue_encoder.color = desired_color
+    strip.color = desired_color
+
     if hue_encoder.status & (0x01 << 1):
         print("toggle fast mode")
         hue_encoder.toggle_fast_mode()
 
     value = value_encoder.value
     value_encoder.color = CRGB(value, value, value)
+    strip.brightness = value / 255
 
-    # strip[0] = (i,0,0)
+    if value_encoder.status & (0x01 << 1):
+        strip.toggle_brightness()
 
-    # i = (i+1) % 256  # run from 0 to 255
+
     time.sleep(0.1) # make bigger to slow down
