@@ -11,6 +11,7 @@ from adafruit_fancyled import CRGB, CHSV
 
 
 DOTSTAR_MAX_BRIGHTNESS = 0.2
+DEBUG = True
 
 
 # https://www.tindie.com/products/Saimon/i2cencoder-v2-connect-multiple-encoder-on-i2c-bus/?pt=ac_prod_search
@@ -107,14 +108,15 @@ class I2CEncoderV2():
             color = CRGB(color)
 
         if repr(color) != repr(self.last_set_color):
-            print(color)
+            debug("ENC[{}]: \tcolor: \t\t{}".format(self.name, color))
             self.write(0x18, color.pack().to_bytes(3, 'big'))
             self.last_set_color = color
 
 
 class LedStrip():
-    def __init__(self, dotstar):
+    def __init__(self, dotstar, name=""):
         self.dotstar = dotstar
+        self.name = name
 
         self.last_set_color = CRGB(0, 0, 0)
         self.last_set_brightness = 1.0
@@ -136,7 +138,7 @@ class LedStrip():
             color = CRGB(color)
 
         if repr(color) != repr(self.last_set_color):
-            print("setting strip color")
+            debug("STRIP[{}]: \tcolor: \t\t{}".format(self.name, color))
             self.dotstar[0] = color.pack()
             self.last_set_color = color
 
@@ -147,10 +149,15 @@ class LedStrip():
     @brightness.setter
     def brightness(self, value):
         if value != self.last_set_brightness:
-            print("setting strip brightness")
+            debug("STRIP[{}]: \tbrightness: \t{}".format(self.name, value))
             self.dotstar.brightness = (DOTSTAR_MAX_BRIGHTNESS *
                                        self.last_set_brightness)
             self.last_set_brightness = value
+
+
+def debug(message):
+    if DEBUG:
+        print(message)
 
 
 # One pixel connected internally!
@@ -181,7 +188,7 @@ value_encoder = I2CEncoderV2(i2c_devices[1],
 
 
 dot[0] = (255,0,111)
-strip = LedStrip(dot)
+strip = LedStrip(dot, name="wall")
 
 
 for i in [hue_encoder, value_encoder]:
@@ -203,7 +210,7 @@ while True:
     strip.color = desired_color
 
     if hue_encoder.status & (0x01 << 1):
-        print("toggle fast mode")
+        debug("toggle fast mode")
         hue_encoder.toggle_fast_mode()
 
     value = value_encoder.value
@@ -211,6 +218,7 @@ while True:
     strip.brightness = value / 255
 
     if value_encoder.status & (0x01 << 1):
+        debug("toggle brightness")
         strip.toggle_brightness()
 
 
