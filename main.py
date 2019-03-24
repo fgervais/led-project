@@ -20,6 +20,8 @@ class I2CEncoderV2():
         if wrap:
             self.config |= (0x01 << 1)
 
+        self.last_set_color = fancy.CRGB(0, 0, 0)
+
     def __str__(self):
         s  = "ENC[{}]: config: \t\t{}\n".format(self.name, hex(self.config))
         s += "ENC[{}]: status: \t\t{}\n".format(self.name, hex(self.status))
@@ -82,7 +84,9 @@ class I2CEncoderV2():
         if type(color) is fancy.CHSV:
             color = fancy.CRGB(color)
 
-        self.write(0x18, color.pack().to_bytes(3, 'big'))
+        if repr(color) != repr(self.last_set_color):
+            self.write(0x18, color.pack().to_bytes(3, 'big'))
+            self.last_set_color = color
 
 
 # One pixel connected internally!
