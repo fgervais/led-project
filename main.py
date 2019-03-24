@@ -21,14 +21,15 @@ class I2CEncoderV2():
             self.config |= (0x01 << 1)
 
         self.last_set_color = fancy.CRGB(0, 0, 0)
+        self.fast_mode = False
 
     def __str__(self):
         s  = "ENC[{}]: config: \t\t{}\n".format(self.name, hex(self.config))
-        s += "ENC[{}]: status: \t\t{}\n".format(self.name, hex(self.status))
-        s += "ENC[{}]: counter_value: \t{}\n".format(self.name,
-                                                  hex(self.counter_value))
-        s += "ENC[{}]: counter_max_value: \t{}\n".format(self.name,
-                                                  hex(self.counter_max_value))
+        # s += "ENC[{}]: status: \t\t{}\n".format(self.name, hex(self.status))
+        s += "ENC[{}]: value: \t{}\n".format(self.name,
+                                                  hex(self.value))
+        s += "ENC[{}]: max_value: \t{}\n".format(self.name,
+                                                  hex(self.max_value))
         s += "ENC[{}]: color: \t\t{}\n".format(self.name, self.color)
 
         return s
@@ -46,6 +47,14 @@ class I2CEncoderV2():
         with self.device:
             self.device.write(bytes([register]) + data)
 
+    def toggle_fast_mode(self):
+        if self.fast_mode:
+            self.increment_step = 1
+            self.fast_mode = False
+        else:
+            self.increment_step = 10
+            self.fast_mode = True
+
     @property
     def config(self):
         return self.read(0x00, 1)
@@ -59,17 +68,24 @@ class I2CEncoderV2():
         return self.read(0x05, 1)
 
     @property
-    def counter_value(self):
+    def value(self):
         return self.read(0x08, 4)
 
     @property
-    def counter_max_value(self):
+    def max_value(self):
         return self.read(0x0c, 4)
 
-    @counter_max_value.setter
-    def counter_max_value(self, value):
+    @max_value.setter
+    def max_value(self, value):
         self.write(0x0c, value.to_bytes(4, 'big'))
 
+    @property
+    def increment_step(self):
+        return self.read(0x14, 4)
+
+    @increment_step.setter
+    def increment_step(self, value):
+        self.write(0x14, value.to_bytes(4, 'big'))
 
     @property
     def color(self):
@@ -120,7 +136,7 @@ dot[0] = (255,0,111)
 
 
 for i in [hue_encoder, value_encoder]:
-    i.counter_max_value = 255
+    i.max_value = 255
     i.color = fancy.CHSV(0)
 
 # # Built in red LED
@@ -130,15 +146,17 @@ led.direction = digitalio.Direction.OUTPUT
 
 
 while True:
-    print("Hello")
-    for i in [hue_encoder, value_encoder]:
-        print(i)
+    # print("Hello")
+    # for i in [hue_encoder, value_encoder]:
+    #     print(i)
 
 
-    hue_encoder.color = fancy.CHSV(hue_encoder.counter_value)
-
+    hue_encoder.color = fancy.CHSV(hue_encoder.value)
+    if hue_encoder.status & (0x01 << 1):
+        print("toggle fast mode")
+        hue_encoder.toggle_fast_mode()
 
     # strip[0] = (i,0,0)
 
     # i = (i+1) % 256  # run from 0 to 255
-    time.sleep(1) # make bigger to slow down
+    time.sleep(0.1) # make bigger to slow down
