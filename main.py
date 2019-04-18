@@ -171,7 +171,7 @@ dot = adafruit_dotstar.DotStar(board.APA102_SCK,
 #                                  1,
 #                                  brightness=DOTSTAR_MAX_BRIGHTNESS)
 
-i2c_bus = busio.I2C(board.SCL, board.SDA)
+i2c_bus = busio.I2C(board.SCL, board.SDA, frequency=100000)
 
 i2c_devices = []
 i2c_devices.append(I2CDevice(i2c_bus, 0x01))
