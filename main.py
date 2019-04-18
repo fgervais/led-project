@@ -150,8 +150,7 @@ class LedStrip():
     def brightness(self, value):
         if value != self.last_set_brightness:
             debug("STRIP[{}]: \tbrightness: \t{}".format(self.name, value))
-            self.dotstar.brightness = (DOTSTAR_MAX_BRIGHTNESS *
-                                       self.last_set_brightness)
+            self.dotstar.brightness = DOTSTAR_MAX_BRIGHTNESS * value
             self.last_set_brightness = value
 
 
