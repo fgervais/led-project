@@ -236,4 +236,4 @@ while True:
         strip.toggle_brightness()
 
 
-    time.sleep(0.1) # make bigger to slow down
+    # time.sleep(0.1) # make bigger to slow down
