@@ -11,7 +11,7 @@ from adafruit_fancyled import CRGB, CHSV
 
 
 DOTSTAR_MAX_BRIGHTNESS = 0.2
-DEBUG = True
+DEBUG = False
 
 
 # https://www.tindie.com/products/Saimon/i2cencoder-v2-connect-multiple-encoder-on-i2c-bus/?pt=ac_prod_search
