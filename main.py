@@ -186,7 +186,6 @@ value_encoder = I2CEncoderV2(i2c_devices[1],
                              illuminated=True)
 
 
-dot[0] = (255,0,111)
 strip = LedStrip(dot, name="wall")
 
 
