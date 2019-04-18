@@ -195,7 +195,7 @@ for i in [hue_encoder, value_encoder]:
     i.color = CHSV(0)
     i.toggle_fast_mode()
 
-# # Built in red LED
+# Built in red LED
 led = digitalio.DigitalInOut(board.D13)
 led.direction = digitalio.Direction.OUTPUT
 
