@@ -45,14 +45,30 @@ class I2CEncoderV2():
         result = bytearray(length)
 
         with self.device:
-            self.device.write(bytes([register]), stop=False)
-            self.device.readinto(result)
+            while True:
+                try:
+                    self.device.write(bytes([register]), stop=False)
+                    self.device.readinto(result)
+                    break
+                except:
+                    print("---------------")
+                    print("ERROR: I2C READ")
+                    print("---------------")
+                    time.sleep(0.1)
 
         return int.from_bytes(result, 'big')
 
     def write(self, register, data):
         with self.device:
-            self.device.write(bytes([register]) + data)
+            while True:
+                try:
+                    self.device.write(bytes([register]) + data)
+                    break
+                except:
+                    print("----------------")
+                    print("ERROR: I2C WRITE")
+                    print("----------------")
+                    time.sleep(0.1)
 
     def toggle_fast_mode(self):
         if self.fast_mode:
